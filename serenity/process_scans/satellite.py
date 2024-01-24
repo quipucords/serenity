@@ -1,5 +1,4 @@
 import pandas as pd
-import datetime
 
 
 def trim_hostname(satellite_df):
