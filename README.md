@@ -6,9 +6,11 @@ ET DS (Emerging Technology Data Science) develops a vehicle of transforming Disc
 
 ### Step 1: Install Packages & Python Version
 
-Python version recommended - `Python 3.8.3`
-
-`pip install -r requirements.txt`
+```
+pyenv install $(cat .python-version)
+poetry env use $(pyenv which python)
+poetry install
+```
 
 ### Step 2: Upload raw datasets to data/ folder
 
@@ -81,33 +83,29 @@ If running in `--validate` mode, you will need to upload the intermediate test d
 
 ### Step 3: Run script
 
-Change to the `build` directory (directory containing the automated scripts):
-
-1. `cd build` 
-
 Running in **automation mode**:
 
-2. `python main.py --foldername <raw data folder name> --scan <type of scans>`
+`poetry run python -m serenity --foldername <raw data folder name> --scan <type of scans>`
 
 OR
 
 Running in **validation mode** (only when we have test data to validate against):
 
-`python main.py --foldername <raw data folder name> --scan <type of scans> --validate`
+`poetry run python -m serenity --foldername <raw data folder name> --scan <type of scans> --validate`
 
-Make sure to run the above by passing the correct set of parameters as defined below: 
+Make sure to run the above by passing the correct set of parameters as defined below:
 
 * **foldername**
     * Specify the recon folder name you would want to run this code on
-    * Example: 
+    * Example:
     `--foldername test-data-recon1`
-  
+
 * **scan**
     * Specify the Discovery scan type(s) to be processed. If there are more than one scans, add them with a space separation.
-    * Example: 
+    * Example:
     `--scan vcenter`, `--scan vcenter network`, `--scan network`, `--scan vcenter satellite`
-    
-* **validate** 
+
+* **validate**
     * Optional argument only to be specified when running in validation mode i.e. if there is correponding test data that we would want to validate our automated outputs against.
     * Example:
     `--validate`
@@ -119,10 +117,8 @@ This example runs the tool for:
 * *scans* - **vcenter, network**
 * *Execution mode* - Running in **validation mode**
 
-`cd build`
-
 ```
-$ python main.py --foldername test-data-recon2 --scan vcenter network --validate
+$ poetry run python -m serenity --foldername test-data-recon2 --scan vcenter network --validate
 Start creating vcenter scan
 Group 'cddmtylin' has 8 rows with 'vm.state' as 'poweredOn'
 Keeping all servers since Powered On
@@ -148,23 +144,23 @@ For  Comment accuracy in % is  0.0
 2      Non Red Hat Server
 3      Non Red Hat Server
 4      Non Red Hat Server
-              ...        
+              ...
 275    Non Red Hat Server
 276    Non Red Hat Server
 277    Non Red Hat Server
 278    Non Red Hat Server
 279                   NaN
 Name: Comment_auto, Length: 280, dtype: object
-0      Non Redhat 
-1      Non Redhat 
-2      Non Redhat 
-3      Non Redhat 
-4      Non Redhat 
-          ...     
-275    Non Redhat 
-276    Non Redhat 
-277    Non Redhat 
-278    Non Redhat 
+0      Non Redhat
+1      Non Redhat
+2      Non Redhat
+3      Non Redhat
+4      Non Redhat
+          ...
+275    Non Redhat
+276    Non Redhat
+277    Non Redhat
+278    Non Redhat
 279              -
 Name: Comment_gbd, Length: 280, dtype: object
 In validation mode and checking for accuracy for network scans.
