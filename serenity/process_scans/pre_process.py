@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import numpy as np
-from process_scans.v_center import compare_dfs
+from .v_center import compare_dfs
 
 
 def read_raw_input(file_path):
