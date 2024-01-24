@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import json
 import pandas as pd
@@ -5,13 +6,13 @@ import numpy as np
 from .v_center import compare_dfs
 
 
-def read_raw_input(file_path):
+def read_raw_input(file_path: Path):
     """
     Reads the raw input JSON (deployments, details) files and appends (if multiple JSON files are present)
     into a single input JSON file
 
     Parameters:
-    - file_path (str): File path location of the raw datasets
+    - file_path (Path): File path location of the raw datasets
 
     Returns:
     - JSON file: A new JSON file for deployments and details respectively in the file path
@@ -145,7 +146,7 @@ def drop_empty_rows_columns(df, r_or_c):
     return df
 
 
-def process_scans(file_path, scan_type, gbd_keys, auto_keys, gbd_cols, auto_cols):
+def process_scans(file_path: Path, scan_type, gbd_keys, auto_keys, gbd_cols, auto_cols):
     """
     Comparison of GBD generated vs automated intermediate data when running in
     validation mode.
@@ -163,20 +164,16 @@ def process_scans(file_path, scan_type, gbd_keys, auto_keys, gbd_cols, auto_cols
 
     print(f"In validation mode and checking for accuracy for {scan_type} scans.")
     gbd_df = pd.read_csv(
-        os.path.join(
-            f"../data/{file_path}",
-            "intermediate",
-            scan_type,
-            f"{scan_type}_intermediate_gbd_generated.csv",
-        )
+        file_path
+        / "intermediate"
+        / scan_type
+        / f"{scan_type}_intermediate_gbd_generated.csv"
     )
     auto_df = pd.read_csv(
-        os.path.join(
-            f"../data/{file_path}",
-            "intermediate",
-            scan_type,
-            f"{scan_type}_intermediate_automated.csv",
-        )
+        file_path
+        / "intermediate"
+        / scan_type
+        / f"{scan_type}_intermediate_automated.csv"
     )
 
     if len(auto_df) != len(gbd_df):
