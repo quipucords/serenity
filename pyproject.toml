@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "serenity"
+version = "0.1.0"
+description = ""
+authors = ["Quipucords Dev Team <quipucords@redhat.com>"]
+license = "GPLv3"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "^2.2.0"
+numpy = "^1.26.3"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.12.1"
+ruff = "^0.1.14"
+pytest = "^7.4.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
