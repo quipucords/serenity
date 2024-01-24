@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from process_scans.v_center import compare_dfs
 
+
 def read_raw_input(file_path):
     """
     Reads the raw input JSON (deployments, details) files and appends (if multiple JSON files are present)
@@ -15,7 +16,7 @@ def read_raw_input(file_path):
     Returns:
     - JSON file: A new JSON file for deployments and details respectively in the file path
     """
-    
+
     merged_deployments_data = []
     merged_details_data = []
     for root, dirs, files in os.walk(file_path):
@@ -45,7 +46,7 @@ def read_raw_input(file_path):
     with open(os.path.join(file_path, "merged_details.json"), "w") as f:
         json.dump(merged_details_data, f, indent=4)
 
-        
+
 def normalize_data(df_details, df_deployments):
     """
     Normalize the details.json, deployments.json file contents
@@ -58,28 +59,32 @@ def normalize_data(df_details, df_deployments):
     - details dataframe: New dataframe with normalized columns
     - deployments dataframe: New dataframe with normalized columns
     """
-    
-    df_norm_details = pd.json_normalize(df_details['sources'])
-    
+
+    df_norm_details = pd.json_normalize(df_details["sources"])
+
     # extra step needs to be done if there are multiple raw json files
     df_norm_details = pd.json_normalize(df_norm_details[0])
-    
-    df_norm_details_facts = pd.json_normalize(df_norm_details['facts'])
+
+    df_norm_details_facts = pd.json_normalize(df_norm_details["facts"])
     df_norm_details_facts_det = pd.DataFrame()
-    
+
     # Detect all dictionaries that have facts data.
     for i in range(len(df_norm_details_facts.columns.to_list())):
-        df_norm_details_facts_det = pd.concat([df_norm_details_facts_det,             pd.json_normalize(df_norm_details_facts[i])], ignore_index=True)
-        
+        df_norm_details_facts_det = pd.concat(
+            [df_norm_details_facts_det, pd.json_normalize(df_norm_details_facts[i])],
+            ignore_index=True,
+        )
+
     final_details_df = df_norm_details_facts_det.fillna("-")
-    
+
     # Deployment data
-    df_norm_system_fingerprints = pd.json_normalize(df_deployments['system_fingerprints'])
+    df_norm_system_fingerprints = pd.json_normalize(
+        df_deployments["system_fingerprints"]
+    )
     df_norm_deployment = df_norm_system_fingerprints.fillna("-")
 
-    
     return final_details_df, df_norm_deployment
-        
+
 
 def drop_empty_rows_columns(df, r_or_c):
     """
@@ -92,29 +97,53 @@ def drop_empty_rows_columns(df, r_or_c):
     Returns:
     A modified DataFrame with empty rows or columns removed.
     """
-    
+
     value = np.float64(np.nan)
 
-    if r_or_c == 'rows':
+    if r_or_c == "rows":
         # Find rows with only empty values across all columns
-        rows_to_drop = df.index[df.apply(lambda row: np.all((row == '-') | (row == 'N') | (row == value) | pd.isna(row) | pd.isnull(row) | (row is pd.NaT)), axis=1)].tolist()
+        rows_to_drop = df.index[
+            df.apply(
+                lambda row: np.all(
+                    (row == "-")
+                    | (row == "N")
+                    | (row == value)
+                    | pd.isna(row)
+                    | pd.isnull(row)
+                    | (row is pd.NaT)
+                ),
+                axis=1,
+            )
+        ].tolist()
 
         # Drop the identified rows
         df = df.drop(index=rows_to_drop)
         df.reset_index(inplace=True, drop=True)
-    
-    elif r_or_c == 'columns':
+
+    elif r_or_c == "columns":
         # Find columns with only empty values across all rows
-        columns_to_drop = df.columns[df.apply(lambda col: np.all((col == '-') | (col == 'N') | (col == value) | pd.isna(col) | pd.isnull(col) | (col is pd.NaT)))].tolist()
+        columns_to_drop = df.columns[
+            df.apply(
+                lambda col: np.all(
+                    (col == "-")
+                    | (col == "N")
+                    | (col == value)
+                    | pd.isna(col)
+                    | pd.isnull(col)
+                    | (col is pd.NaT)
+                )
+            )
+        ].tolist()
 
         # Drop the identified columns
         df = df.drop(columns=columns_to_drop)
         df.reset_index(inplace=True, drop=True)
-    
+
     else:
         raise ValueError("Invalid value for 'r_or_c'. Use 'rows' or 'columns'.")
 
     return df
+
 
 def process_scans(file_path, scan_type, gbd_keys, auto_keys, gbd_cols, auto_cols):
     """
@@ -131,19 +160,37 @@ def process_scans(file_path, scan_type, gbd_keys, auto_keys, gbd_cols, auto_cols
     Returns:
     The accuracy results (in percentage) for columns specified
     """
-    
+
     print(f"In validation mode and checking for accuracy for {scan_type} scans.")
-    gbd_df = pd.read_csv(os.path.join(f"../data/{file_path}", "intermediate", scan_type, f"{scan_type}_intermediate_gbd_generated.csv"))
-    auto_df = pd.read_csv(os.path.join(f"../data/{file_path}", "intermediate", scan_type, f"{scan_type}_intermediate_automated.csv"))
+    gbd_df = pd.read_csv(
+        os.path.join(
+            f"../data/{file_path}",
+            "intermediate",
+            scan_type,
+            f"{scan_type}_intermediate_gbd_generated.csv",
+        )
+    )
+    auto_df = pd.read_csv(
+        os.path.join(
+            f"../data/{file_path}",
+            "intermediate",
+            scan_type,
+            f"{scan_type}_intermediate_automated.csv",
+        )
+    )
 
     if len(auto_df) != len(gbd_df):
-        raise ValueError(f"Number of rows in 'gbd' DataFrame ({len(gbd_df)}) is different from 'auto' DataFrame ({len(auto_df)}).")
-    
+        raise ValueError(
+            f"Number of rows in 'gbd' DataFrame ({len(gbd_df)}) is different from 'auto' DataFrame ({len(auto_df)})."
+        )
+
     if len(gbd_cols) != len(auto_cols):
-        raise ValueError(f"Number of columns to compare in gbd dataset ({len(gbd_cols)}) is different from number of columns to compare in the automated dataset ({len(auto_cols)}).")
-    
-    if file_path == 'test-data-recon1':
-        gbd_df['index'] = gbd_df.index
+        raise ValueError(
+            f"Number of columns to compare in gbd dataset ({len(gbd_cols)}) is different from number of columns to compare in the automated dataset ({len(auto_cols)})."
+        )
+
+    if file_path == "test-data-recon1":
+        gbd_df["index"] = gbd_df.index
     # Call for specified columns
     for i in range(len(auto_cols)):
         compare_dfs(gbd_keys, auto_keys, gbd_cols[i], auto_cols[i], gbd_df, auto_df)
