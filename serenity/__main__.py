@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 import argparse
 import os
@@ -47,26 +48,18 @@ warnings.filterwarnings("ignore")
 from . import inputs
 
 
-def main(validate=None, foldername=None, scan=None):
+def main(validate=None, datadir: Path = None, scan=None):
     # Creating intermediate scans
-    if scan and foldername:
+    if scan and datadir:
         for scan_type in scan:
             if scan_type == "vcenter":
                 print("Start creating vcenter scan")
-                file_path = foldername
-                read_raw_input(os.path.join(f"../data/{file_path}", "raw", "vcenter"))
+                read_raw_input(datadir / "raw" / "vcenter")
                 df_v_details = pd.read_json(
-                    os.path.join(
-                        f"../data/{file_path}", "raw", "vcenter", "merged_details.json"
-                    )
+                    datadir / "raw" / "vcenter" / "merged_details.json"
                 )
                 df_v_deployment = pd.read_json(
-                    os.path.join(
-                        f"../data/{file_path}",
-                        "raw",
-                        "vcenter",
-                        "merged_deployments.json",
-                    )
+                    datadir / "raw" / "vcenter" / "merged_deployments.json"
                 )
                 v_center, v_deployment = normalize_data(df_v_details, df_v_deployment)
                 final_vcenter = drop_empty_rows_columns(v_center, "rows")
@@ -78,28 +71,21 @@ def main(validate=None, foldername=None, scan=None):
                 v_center_merged = merge_rn_nonrh(rh_vcenter_dupes, nonrh_vcenter)
                 v_center_prod_split = product_name_version(v_center_merged)
                 v_center_prod_split.to_csv(
-                    os.path.join(
-                        f"../data/{file_path}",
-                        "intermediate",
-                        "vcenter",
-                        "vcenter_intermediate_automated.csv",
-                    )
+                    datadir
+                    / "intermediate"
+                    / "vcenter"
+                    / "vcenter_intermediate_automated.csv"
                 )
                 print("Finished Vcenter scan successfully!!!!")
 
             if scan_type == "network":
                 print("Start creating Network scan")
-                file_path = foldername
-                read_raw_input(os.path.join(f"../data/{file_path}", "raw", "network"))
+                read_raw_input(datadir / "raw" / "network")
                 df_n_details = pd.read_json(
-                    os.path.join(
-                        f"../data/{file_path}", "raw", "network", "details.json"
-                    )
+                    datadir / "raw" / "network" / "details.json"
                 )
                 df_n_deployment = pd.read_json(
-                    os.path.join(
-                        f"../data/{file_path}", "raw", "network", "deployments.json"
-                    )
+                    datadir / "raw" / "network" / "deployments.json"
                 )
 
                 network_details, network_deployment = prep_network_data(
@@ -114,34 +100,21 @@ def main(validate=None, foldername=None, scan=None):
                 network_details = add_date_column(network_details, network_deployment)
                 network_details = check_num_of_packages(network_details)
                 network_details.to_csv(
-                    os.path.join(
-                        f"../data/{file_path}",
-                        "intermediate",
-                        "network",
-                        "network_intermediate_automated.csv",
-                    )
+                    datadir
+                    / "intermediate"
+                    / "network"
+                    / "network_intermediate_automated.csv"
                 )
                 print("Finished Network scan successfully!!!!")
 
             if scan_type == "satellite":
                 print("Start creating satellite scan")
-                file_path = foldername
-                read_raw_input(os.path.join(f"../data/{file_path}", "raw", "satellite"))
+                read_raw_input(os.path.join(datadir / "raw" / "satellite"))
                 df_s_details = pd.read_json(
-                    os.path.join(
-                        f"../data/{file_path}",
-                        "raw",
-                        "satellite",
-                        "merged_details.json",
-                    )
+                    datadir / "raw" / "satellite" / "merged_details.json"
                 )
                 df_s_deployment = pd.read_json(
-                    os.path.join(
-                        f"../data/{file_path}",
-                        "raw",
-                        "satellite",
-                        "merged_deployments.json",
-                    )
+                    datadir / "raw" / "satellite" / "merged_deployments.json"
                 )
                 s_details, s_deployment = normalize_data(df_s_details, df_s_deployment)
                 final_satellite = drop_empty_rows_columns(s_details, "rows")
@@ -156,12 +129,10 @@ def main(validate=None, foldername=None, scan=None):
                 )
                 satellite_df = identify_physical_servers(satellite_df)
                 satellite_df.to_csv(
-                    os.path.join(
-                        f"../data/{file_path}",
-                        "intermediate",
-                        "satellite",
-                        "satellite_intermediate_automated.csv",
-                    )
+                    datadir
+                    / "intermediate"
+                    / "satellite"
+                    / "satellite_intermediate_automated.csv"
                 )
                 print("Finished Satellite scan successfully!!!!")
 
@@ -170,16 +141,15 @@ def main(validate=None, foldername=None, scan=None):
         deployment_details_df = create_dd_df()
         combined_deployment_df = pd.DataFrame()
         print("Start creating deployment details scan")
-        file_path = foldername
 
         for scan_type in scan:
             if scan_type == "vcenter":
                 # from vcenter scan
-                vcenter_path = os.path.join(
-                    f"../data/{file_path}",
-                    "intermediate",
-                    "vcenter",
-                    "vcenter_intermediate_automated.csv",
+                vcenter_path = (
+                    datadir
+                    / "intermediate"
+                    / "vcenter"
+                    / "vcenter_intermediate_automated.csv"
                 )
                 vcenter_data = read_csv_file(vcenter_path)
                 processed_data = fill_deployment_from_vcenter(
@@ -188,11 +158,11 @@ def main(validate=None, foldername=None, scan=None):
 
             elif scan_type == "network":
                 # from network scan
-                network_path = os.path.join(
-                    f"../data/{file_path}",
-                    "intermediate",
-                    "network",
-                    "network_intermediate_automated.csv",
+                network_path = (
+                    datadir
+                    / "intermediate"
+                    / "network"
+                    / "network_intermediate_automated.csv"
                 )
                 network_data = read_csv_file(network_path)
                 processed_data = fill_deployment_from_network(
@@ -201,11 +171,11 @@ def main(validate=None, foldername=None, scan=None):
 
             elif scan_type == "satellite":
                 # from satellite
-                satellite_path = os.path.join(
-                    f"../data/{file_path}",
-                    "intermediate",
-                    "satellite",
-                    "satellite_intermediate_automated.csv",
+                satellite_path = (
+                    datadir
+                    / "intermediate"
+                    / "satellite"
+                    / "satellite_intermediate_automated.csv"
                 )
                 satellite_data = read_csv_file(satellite_path)
                 processed_data = fill_deployment_from_satellite(
@@ -233,23 +203,18 @@ def main(validate=None, foldername=None, scan=None):
 
             # Save the deployment details
             combined_deployment_df.to_csv(
-                os.path.join(
-                    f"../data/{file_path}",
-                    "final_report",
-                    "deployment_details_auto_generated.csv",
-                ),
+                datadir / "final_report" / "deployment_details_auto_generated.csv",
                 index=False,
             )
             print("Deployment_details scan created")
 
     # Validation Mode
-    if validate and scan and foldername:
+    if validate and scan and datadir:
         for scan_type in scan:
-            file_path = foldername
             if scan_type == "vcenter":
                 v_center_prod_split["Duplicate"].fillna("N", inplace=True)
                 process_scans(
-                    file_path,
+                    datadir,
                     scan_type,
                     inputs.gbd_keys_vcenter,
                     inputs.auto_keys_vcenter,
@@ -259,7 +224,7 @@ def main(validate=None, foldername=None, scan=None):
 
             if scan_type == "network":
                 process_scans(
-                    file_path,
+                    datadir,
                     scan_type,
                     inputs.gbd_keys_network,
                     inputs.auto_keys_network,
@@ -269,7 +234,7 @@ def main(validate=None, foldername=None, scan=None):
 
             if scan_type == "satellite":
                 process_scans(
-                    file_path,
+                    datadir,
                     scan_type,
                     inputs.gbd_keys_satellite,
                     inputs.auto_keys_satellite,
@@ -292,6 +257,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--foldername",
+        type=Path,
         required=True,
         default=None,
         help="Folder location of the raw datasets",
