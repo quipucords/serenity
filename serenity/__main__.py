@@ -16,7 +16,6 @@ from .process_scans.v_center import (
     check_duplicates,
     merge_rn_nonrh,
     product_name_version,
-    compare_dfs,
 )
 from .process_scans.network import (
     prep_network_data,
