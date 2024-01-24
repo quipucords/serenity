@@ -1,13 +1,13 @@
 import pandas as pd
 import argparse
 import os
-from process_scans.pre_process import (
+from .process_scans.pre_process import (
     read_raw_input,
     normalize_data,
     drop_empty_rows_columns,
     process_scans,
 )
-from process_scans.v_center import (
+from .process_scans.v_center import (
     trim_cm_dns_name,
     add_considered_comment,
     split_rh_nonrh,
@@ -17,14 +17,14 @@ from process_scans.v_center import (
     product_name_version,
     compare_dfs,
 )
-from process_scans.network import (
+from .process_scans.network import (
     prep_network_data,
     check_for_errors,
     new_host_names,
     add_date_column,
     check_num_of_packages,
 )
-from process_scans.satellite import (
+from .process_scans.satellite import (
     trim_hostname,
     get_install_date,
     virtwho_check,
@@ -34,7 +34,7 @@ from process_scans.satellite import (
     check_duplicates_satellite,
     identify_physical_servers,
 )
-from process_scans.create_deployment_details import (
+from .process_scans.create_deployment_details import (
     create_dd_df,
     read_csv_file,
     fill_deployment_from_vcenter,
@@ -44,7 +44,7 @@ from process_scans.create_deployment_details import (
 import warnings
 
 warnings.filterwarnings("ignore")
-import inputs
+from . import inputs
 
 
 def main(validate=None, foldername=None, scan=None):
