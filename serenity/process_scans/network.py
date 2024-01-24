@@ -165,7 +165,7 @@ def add_date_column(final_details_df, df_n_deployment):
 
     # Convert 'system_creation_date' to datetime format and reformat it
     merged_df["system_creation_date"] = pd.to_datetime(
-        merged_df["system_creation_date"], format="%Y/%m/%d"
+        merged_df["system_creation_date"], format="%Y-%m-%d"
     )
     merged_df["system_creation_date"] = merged_df["system_creation_date"].dt.strftime(
         "%-m/%-d/%-Y"
