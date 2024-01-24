@@ -43,8 +43,9 @@ from .process_scans.create_deployment_details import (
 )
 import warnings
 
-warnings.filterwarnings("ignore")
 from . import inputs
+
+warnings.filterwarnings("ignore")
 
 
 def main(validate=None, datadir: Path = None, scan=None):
